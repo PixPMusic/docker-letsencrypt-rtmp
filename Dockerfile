@@ -25,7 +25,9 @@ RUN apk add --update \
   pcre-dev \
   pkgconf \
   pkgconfig \
-  zlib-dev
+  zlib-dev \
+  libxslt-dev \
+  libxslt
  
 
 # Get nginx source.
