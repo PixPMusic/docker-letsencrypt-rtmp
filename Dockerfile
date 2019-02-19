@@ -38,7 +38,7 @@ RUN cd /tmp && \
 
 # Get nginx-rtmp module.
 RUN cd /tmp && \
-  wget https://github.com/sergey-dryabzhinsky/nginx-rtmp-module/archive/${NGINX_RTMP_COMMIT}.tar.gz && \
+  echo https://github.com/sergey-dryabzhinsky/nginx-rtmp-module/archive/${NGINX_RTMP_COMMIT}.tar.gz && wget https://github.com/sergey-dryabzhinsky/nginx-rtmp-module/archive/a5ac72c274efb09e8f1fda4d5d92b70cec66c359.tar.gz && \
   tar zxf ${NGINX_RTMP_COMMIT}.tar.gz && rm ${NGINX_RTMP_COMMIT}.tar.gz
 
 # Compile nginx with nginx-rtmp module.
