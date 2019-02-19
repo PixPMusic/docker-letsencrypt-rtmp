@@ -1,5 +1,5 @@
 ARG NGINX_VERSION=1.14.2
-ARG NGINX_RTMP_VERSION=1.2.1
+ARG NGINX_RTMP_VERSION=1.1.7.10
 ARG FFMPEG_VERSION=4.1
 
 ##############################
@@ -36,26 +36,16 @@ RUN cd /tmp && \
 
 # Get nginx-rtmp module.
 RUN cd /tmp && \
-  wget https://github.com/arut/nginx-rtmp-module/archive/v${NGINX_RTMP_VERSION}.tar.gz && \
+  wget https://github.com/sergey-dryabzhinsky/nginx-rtmp-module/archive/v${NGINX_RTMP_VERSION}.tar.gz && \
   tar zxf v${NGINX_RTMP_VERSION}.tar.gz && rm v${NGINX_RTMP_VERSION}.tar.gz
 
 # Compile nginx with nginx-rtmp module.
 RUN cd /tmp/nginx-${NGINX_VERSION} && \
 	./configure \
-		--prefix=/etc/nginx \
-		--sbin-path=/usr/sbin/nginx \
-		--add-module=/tmp/nginx-rtmp-module-${NGINX_RTMP_VERSION} \
-		--conf-path=/etc/nginx/nginx.conf \
-		--modules-path=/usr/lib/nginx/modules \
-		--with-threads \
-		--with-file-aio \
-		--with-http_ssl_module \
-		--error-log-path=/var/log/nginx/error.log \
-		--http-log-path=/var/log/nginx/access.log \
-		--pid-path=/var/run/nginx.pid \
-		--lock-path=/var/run/nginx.lock \
-		--with-debug && \
-	cd /tmp/nginx-${NGINX_VERSION} && make && make install
+		--with-compat \
+		--add-dynamic-module=/tmp/nginx-rtmp-module-${NGINX_RTMP_VERSION} \
+		&& \
+	cd /tmp/nginx-${NGINX_VERSION} && make modules && cp objs/* /etc/nginx/modules/
 
 ###############################
 # Build the FFmpeg-build image.
@@ -131,9 +121,7 @@ RUN rm -rf /var/cache/* /tmp/*
 FROM lsiobase/alpine.nginx:3.8
 
 # copy rtmp prebuilts
-COPY --from=build-nginx /etc/nginx /etc/nginx
 COPY --from=build-nginx /usr/lib/nginx/modules /usr/lib/nginx/modules
-COPY --from=build-nginx /usr/sbin/nginx /usr/sbin/nginx
 COPY --from=build-ffmpeg /usr/local /usr/local
 COPY --from=build-ffmpeg /usr/lib/libfdk-aac.so.1 /usr/lib/libfdk-aac.so.1
 
@@ -199,7 +187,8 @@ RUN \
 	php7-xmlreader \
 	php7-zip \
 	py2-future \
-	py2-pip && \
+	py2-pip \
+	ffmpeg && \
  echo "**** install certbot plugins ****" && \
  if [ -z ${CERTBOT_VERSION+x} ]; then \
         CERTBOT="certbot"; \
