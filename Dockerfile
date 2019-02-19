@@ -39,13 +39,13 @@ RUN cd /tmp && \
 # Get nginx-rtmp module.
 RUN cd /tmp && \
   echo https://github.com/sergey-dryabzhinsky/nginx-rtmp-module/archive/${NGINX_RTMP_COMMIT}.tar.gz && wget https://github.com/sergey-dryabzhinsky/nginx-rtmp-module/archive/a5ac72c274efb09e8f1fda4d5d92b70cec66c359.tar.gz && \
-  tar zxf ${NGINX_RTMP_COMMIT}.tar.gz && rm ${NGINX_RTMP_COMMIT}.tar.gz
+  tar zxf a5ac72c274efb09e8f1fda4d5d92b70cec66c359.tar.gz && rm a5ac72c274efb09e8f1fda4d5d92b70cec66c359.tar.gz
 
 # Compile nginx with nginx-rtmp module.
 RUN cd /tmp/nginx-${NGINX_VERSION} && \
 	./configure \
 		--with-compat \
-		--add-dynamic-module=/tmp/nginx-rtmp-module-${NGINX_RTMP_COMMIT} \
+		--add-dynamic-module=/tmp/nginx-rtmp-module-a5ac72c274efb09e8f1fda4d5d92b70cec66c359 \
 		&& \
 	cd /tmp/nginx-${NGINX_VERSION} && make modules && cp objs/* /etc/nginx/modules/
 
