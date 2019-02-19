@@ -1,5 +1,7 @@
-ARG NGINX_VERSION=1.10.0
+ARG NGINX_VERSION=1.14.0
 ARG NGINX_RTMP_VERSION=1.1.7.10
+ARG NGINX_RTMP_BRANCH=dev
+ARG NGINX_RTMP_COMMIT=a5ac72c274efb09e8f1fda4d5d92b70cec66c359
 ARG FFMPEG_VERSION=4.1
 
 ##############################
@@ -36,13 +38,14 @@ RUN cd /tmp && \
 
 # Get nginx-rtmp module.
 RUN cd /tmp && \
-  wget https://github.com/sergey-dryabzhinsky/nginx-rtmp-module/archive/v${NGINX_RTMP_VERSION}.tar.gz && \
-  tar zxf v${NGINX_RTMP_VERSION}.tar.gz && rm v${NGINX_RTMP_VERSION}.tar.gz
+  wget https://github.com/sergey-dryabzhinsky/nginx-rtmp-module/archive/${NGINX_RTMP_COMMIT}.tar.gz && \
+  tar zxf ${NGINX_RTMP_COMMIT}.tar.gz && rm ${NGINX_RTMP_COMMIT}.tar.gz
 
 # Compile nginx with nginx-rtmp module.
 RUN cd /tmp/nginx-${NGINX_VERSION} && \
 	./configure \
-		--add-dynamic-module=/tmp/nginx-rtmp-module-${NGINX_RTMP_VERSION} \
+		--with-compat \
+		--add-dynamic-module=/tmp/nginx-rtmp-module-${NGINX_RTMP_COMMIT} \
 		&& \
 	cd /tmp/nginx-${NGINX_VERSION} && make modules && cp objs/* /etc/nginx/modules/
 
