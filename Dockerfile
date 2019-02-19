@@ -47,7 +47,7 @@ RUN cd /tmp/nginx-${NGINX_VERSION} && \
 		--with-compat \
 		--add-dynamic-module=/tmp/nginx-rtmp-module-a5ac72c274efb09e8f1fda4d5d92b70cec66c359 \
 		&& \
-	cd /tmp/nginx-${NGINX_VERSION} && mkdir -p /etc/nginx/modules && make modules && cp -r objs/*.o /etc/nginx/modules/
+	cd /tmp/nginx-${NGINX_VERSION} && mkdir -p /etc/nginx/modules && make modules && cp -r objs/* /etc/nginx/modules/
 
 ###############################
 # Build the FFmpeg-build image.
