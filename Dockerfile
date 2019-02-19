@@ -42,7 +42,6 @@ RUN cd /tmp && \
 # Compile nginx with nginx-rtmp module.
 RUN cd /tmp/nginx-${NGINX_VERSION} && \
 	./configure \
-		--with-compat \
 		--add-dynamic-module=/tmp/nginx-rtmp-module-${NGINX_RTMP_VERSION} \
 		&& \
 	cd /tmp/nginx-${NGINX_VERSION} && make modules && cp objs/* /etc/nginx/modules/
