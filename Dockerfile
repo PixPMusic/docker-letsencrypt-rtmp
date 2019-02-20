@@ -123,7 +123,7 @@ RUN rm -rf /var/cache/* /tmp/*
 FROM lsiobase/alpine.nginx:3.8
 
 # copy rtmp prebuilts
-COPY --from=build-nginx /usr/lib/nginx/modules /usr/lib/nginx/modules
+COPY --from=build-nginx /etc/nginx/modules /usr/lib/nginx/modules
 COPY --from=build-ffmpeg /usr/local /usr/local
 COPY --from=build-ffmpeg /usr/lib/libfdk-aac.so.1 /usr/lib/libfdk-aac.so.1
 
