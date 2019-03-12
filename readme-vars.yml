@@ -35,7 +35,6 @@ param_env_vars:
   - { env_var: "URL", env_value: "yourdomain.url", desc: "Top url you have control over (`customdomain.com` if you own it, or `customsubdomain.ddnsprovider.com` if dynamic dns)." }
   - { env_var: "SUBDOMAINS", env_value: "www,", desc: "Subdomains you'd like the cert to cover (comma separated, no spaces) ie. `www,ftp,cloud`. For a wildcard cert, set this _exactly_ to `wildcard` (wildcard cert is available via `dns` and `duckdns` validation only)" }
   - { env_var: "VALIDATION", env_value: "http", desc: "Letsencrypt validation method to use, options are `http`, `tls-sni`, `dns` or `duckdns` (`dns` method also requires `DNSPLUGIN` variable set) (`duckdns` method requires `DUCKDNSTOKEN` variable set, and the `SUBDOMAINS` variable set to `wildcard`)." }
-  - { env_var: "TZ", env_value: "Europe/London", desc: "Specify a timezone to use EG Europe/London." }
 param_usage_include_vols: true
 param_volumes:
   - { vol_path: "/config", vol_host_path: "</path/to/appdata/config>", desc: "All the config files including the webroot reside here." }
@@ -89,6 +88,7 @@ app_setup_block: |
   * `--cap-add=NET_ADMIN` is required for fail2ban to modify iptables
   * If you need a dynamic dns provider, you can use the free provider duckdns.org where the `URL` will be `yoursubdomain.duckdns.org` and the `SUBDOMAINS` can be `www,ftp,cloud` with http validation, or `wildcard` with dns validation.
   * After setup, navigate to `https://yourdomain.url` to access the default homepage (http access through port 80 is disabled by default, you can enable it by editing the default site config at `/config/nginx/site-confs/default`).
+  * Certs are checked nightly and if expiration is within 30 days, renewal is attempted. If your cert is about to expire in less than 30 days, check the logs under `/config/log/letsencrypt` to see why the renewals have been failing. It is recommended to input your e-mail in docker parameters so you receive expiration notices from letsencrypt in those circumstances.
   ### Security and password protection
   * The container detects changes to url and subdomains, revokes existing certs and generates new ones during start. It also detects changes to the DHLEVEL parameter and replaces the dhparams file.
   * If you'd like to password protect your sites, you can use htpasswd. Run the following command on your host to generate the htpasswd file `docker exec -it letsencrypt htpasswd -c /config/nginx/.htpasswd <username>`
@@ -126,6 +126,10 @@ app_setup_nginx_reverse_proxy_block: ""
 
 # changelog
 changelogs:
+  - { date: "10.03.19:", desc: "Add TLSv1.3 to ssl.conf." }
+  - { date: "02.03.19:", desc: "Add php intl and posix modules." }
+  - { date: "27.02.19:", desc: "Add gnupg package." }
+  - { date: "22.02.19:", desc: "Rebase to alpine 3.9." }
   - { date: "03.02.19:", desc: "Removed memcached due to seccomp errors. Let us know if you need to re-enable memcached." }
   - { date: "28.01.19:", desc: "Add pipeline logic and multi arch." }
   - { date: "21.01.19:", desc: "Remove client_body_max from proxy.conf (existing users need to manually update)." }
