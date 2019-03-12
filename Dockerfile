@@ -124,7 +124,7 @@ FROM lsiobase/alpine.nginx:3.9
 # copy rtmp prebuilts
 COPY --from=build-nginx /etc/nginx/modules /usr/lib/nginx/modules
 COPY --from=build-ffmpeg /usr/local /usr/local
-COPY --from=build-ffmpeg /usr/lib/libfdk-aac.so.1 /usr/lib/libfdk-aac.so.1
+COPY --from=build-ffmpeg /usr/lib/libfdk-aac.so.2 /usr/lib/libfdk-aac.so.2
 
 # set version label
 ARG BUILD_DATE
