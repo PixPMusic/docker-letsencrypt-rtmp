@@ -119,8 +119,7 @@ RUN rm -rf /var/cache/* /tmp/*
 
 ##########################
 # Build the release image.
-
-FROM lsiobase/alpine.nginx:3.8
+FROM lsiobase/alpine.nginx:3.9
 
 # copy rtmp prebuilts
 COPY --from=build-nginx /etc/nginx/modules /usr/lib/nginx/modules
@@ -141,9 +140,9 @@ ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 RUN \
  echo "**** install runtime packages ****" && \
  apk add --no-cache --upgrade \
-	certbot \
 	curl \
 	fail2ban \
+	gnupg \
 	memcached \
 	nginx \
 	nginx-mod-http-echo \
@@ -171,6 +170,7 @@ RUN \
 	php7-exif \
 	php7-gd \
 	php7-iconv \
+	php7-intl \
 	php7-mcrypt \
 	php7-memcached \
 	php7-mysqli \
@@ -181,6 +181,7 @@ RUN \
 	php7-pdo_sqlite \
 	php7-pgsql \
 	php7-phar \
+	php7-posix \
 	php7-soap \
 	php7-sockets \
 	php7-sqlite3 \
@@ -188,6 +189,7 @@ RUN \
 	php7-xml \
 	php7-xmlreader \
 	php7-zip \
+	py2-cryptography \
 	py2-future \
 	py2-pip \
 	ffmpeg && \
@@ -197,9 +199,9 @@ RUN \
  else \
         CERTBOT="certbot==${CERTBOT_VERSION}"; \
  fi && \
- pip install -U --no-cache-dir \
+ pip install -U \
 	pip && \
- pip install -U --no-cache-dir \
+ pip install -U \
 	${CERTBOT} \
 	certbot-dns-cloudflare \
 	certbot-dns-cloudxns \
