@@ -35,7 +35,7 @@ done
 
 # make our folders and links
 mkdir -p \
-	/config/{log/letsencrypt,log/fail2ban,etc/letsencrypt,fail2ban,crontabs,dns-conf} \
+	/config/{log/letsencrypt,log/fail2ban,etc/letsencrypt,fail2ban,crontabs,dns-conf,geoip2db} \
 	/var/run/fail2ban
 rm -rf /etc/letsencrypt
 ln -s /config/etc/letsencrypt /etc/letsencrypt
@@ -46,6 +46,8 @@ chown -R abc:abc /config/dns-conf
 
 # copy reverse proxy configs
 cp -R /defaults/proxy-confs /config/nginx/
+# remove outdated files (remove this action after 2019/08/29)
+rm -f /config/nginx/proxy-confs/_readme /config/nginx/proxy-confs/mytinytodo.subfolder.conf.example
 
 # copy/update the fail2ban config defaults to/in /config
 cp -R /defaults/fail2ban/filter.d /config/fail2ban/
@@ -74,7 +76,7 @@ cp /config/fail2ban/jail.local /etc/fail2ban/jail.local
 	cp /defaults/ldap.conf /config/nginx/ldap.conf
 
 # check to make sure DNSPLUGIN is selected if dns validation is used
-[[ "$VALIDATION" = "dns" ]] && [[ ! "$DNSPLUGIN" =~ ^(cloudflare|cloudxns|digitalocean|dnsimple|dnsmadeeasy|google|luadns|nsone|ovh|rfc2136|route53)$ ]] && \
+[[ "$VALIDATION" = "dns" ]] && [[ ! "$DNSPLUGIN" =~ ^(cloudflare|cloudxns|digitalocean|dnsimple|dnsmadeeasy|google|inwx|luadns|nsone|ovh|rfc2136|route53)$ ]] && \
   echo "Please set the DNSPLUGIN variable to a valid plugin name. See docker info for more details." && \
   sleep infinity
 
@@ -172,6 +174,8 @@ fi
 if [ "$VALIDATION" = "dns" ]; then
   if [ "$DNSPLUGIN" = "route53" ]; then
     PREFCHAL="--dns-${DNSPLUGIN} --manual-public-ip-logging-ok"
+  elif [ "$DNSPLUGIN" = "inwx" ]; then
+    PREFCHAL="-a certbot-dns-${DNSPLUGIN}:dns-${DNSPLUGIN} --certbot-dns-${DNSPLUGIN}:dns-${DNSPLUGIN}-credentials /config/dns-conf/${DNSPLUGIN}.ini --manual-public-ip-logging-ok"
   else
     PREFCHAL="--dns-${DNSPLUGIN} --dns-${DNSPLUGIN}-credentials /config/dns-conf/${DNSPLUGIN}.ini --manual-public-ip-logging-ok"
   fi
@@ -183,8 +187,13 @@ elif [ "$VALIDATION" = "duckdns" ]; then
   PREFCHAL="--non-interactive --manual --preferred-challenges dns --manual-public-ip-logging-ok --manual-auth-hook /app/duckdns-txt"
   chmod +x /app/duckdns-txt
   echo "duckdns validation is selected"
-  echo "the resulting certificate will only cover the subdomains due to a limitation of duckdns, so it is advised to set the root location to use www.subdomain.duckdns.org"
-  export URL_REAL="-d *.${URL}"
+  if [ "$SUBDOMAINS" = "wildcard" ]; then
+    echo "the resulting certificate will only cover the subdomains due to a limitation of duckdns, so it is advised to set the root location to use www.subdomain.duckdns.org"
+    export URL_REAL="-d *.${URL}"
+  else
+    echo "the resulting certificate will only cover the main domain due to a limitation of duckdns, ie. subdomain.duckdns.org"
+    export URL_REAL="-d ${URL}"
+  fi
 else
   PREFCHAL="--non-interactive --standalone --preferred-challenges http"
   echo "http validation is selected"
@@ -239,6 +248,16 @@ if [ ! -f "/config/keys/letsencrypt/fullchain.pem" ]; then
 else
   echo "Certificate exists; parameters unchanged; starting nginx"
 fi
+
+# create GeoIP2 folder symlink
+[[ -d /var/lib/libmaxminddb ]] && [[ ! -L /var/lib/libmaxminddb ]] && \
+  rm -rf /var/lib/libmaxminddb
+[[ ! -d /var/lib/libmaxminddb ]] && \
+  ln -s /config/geoip2db /var/lib/libmaxminddb
+# check GeoIP2 database
+[[ ! -f /var/lib/libmaxminddb/GeoLite2-City.mmdb ]] && \
+  echo "creating GeoIP2 database" && \
+  /etc/periodic/weekly/libmaxminddb
 
 # logfiles needed by fail2ban
 [[ ! -f /config/log/nginx/error.log ]] && \

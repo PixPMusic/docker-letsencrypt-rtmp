@@ -1,7 +1,7 @@
-ARG NGINX_VERSION=1.14.2
+ARG NGINX_VERSION=1.17.4
 ARG NGINX_RTMP_VERSION=1.1.7.10
 ARG NGINX_RTMP_BRANCH=dev
-ARG NGINX_RTMP_COMMIT="a5ac72c274efb09e8f1fda4d5d92b70cec66c359"
+ARG NGINX_RTMP_COMMIT="3bf75232676da7eeff85dcd0fc831533a5eafe6b"
 ARG FFMPEG_VERSION=4.1
 
 ##############################
@@ -38,8 +38,8 @@ RUN cd /tmp && \
 
 # Get nginx-rtmp module.
 RUN cd /tmp && \
-  echo https://github.com/sergey-dryabzhinsky/nginx-rtmp-module/archive/${NGINX_RTMP_COMMIT}.tar.gz && wget https://github.com/sergey-dryabzhinsky/nginx-rtmp-module/archive/a5ac72c274efb09e8f1fda4d5d92b70cec66c359.tar.gz && \
-  tar zxf a5ac72c274efb09e8f1fda4d5d92b70cec66c359.tar.gz && rm a5ac72c274efb09e8f1fda4d5d92b70cec66c359.tar.gz
+  echo https://github.com/sergey-dryabzhinsky/nginx-rtmp-module/archive/${NGINX_RTMP_COMMIT}.tar.gz && wget https://github.com/sergey-dryabzhinsky/nginx-rtmp-module/archive/3bf75232676da7eeff85dcd0fc831533a5eafe6b.tar.gz && \
+  tar zxf 3bf75232676da7eeff85dcd0fc831533a5eafe6b.tar.gz && rm 3bf75232676da7eeff85dcd0fc831533a5eafe6b.tar.gz
 
 # Compile nginx with nginx-rtmp module.
 RUN cd /tmp/nginx-${NGINX_VERSION} && \
@@ -119,7 +119,7 @@ RUN rm -rf /var/cache/* /tmp/*
 
 ##########################
 # Build the release image.
-FROM lsiobase/alpine.nginx:3.9
+FROM lsiobase/nginx:3.10
 
 # copy rtmp prebuilts
 COPY --from=build-nginx /etc/nginx/modules /usr/lib/nginx/modules
@@ -147,7 +147,7 @@ RUN \
 	nginx \
 	nginx-mod-http-echo \
 	nginx-mod-http-fancyindex \
-	nginx-mod-http-geoip \
+	nginx-mod-http-geoip2 \
 	nginx-mod-http-headers-more \
 	nginx-mod-http-image-filter \
 	nginx-mod-http-lua \
@@ -161,16 +161,18 @@ RUN \
 	nginx-mod-mail \
 	nginx-mod-rtmp \
 	nginx-mod-stream \
-	nginx-mod-stream-geoip \
 	nginx-vim \
+	php7-bcmath \
 	php7-bz2 \
 	php7-ctype \
 	php7-curl \
 	php7-dom \
 	php7-exif \
+	php7-ftp \
 	php7-gd \
 	php7-iconv \
 	php7-intl \
+	php7-ldap \
 	php7-mcrypt \
 	php7-memcached \
 	php7-mysqli \
@@ -179,6 +181,8 @@ RUN \
 	php7-pdo_mysql \
 	php7-pdo_pgsql \
 	php7-pdo_sqlite \
+	php7-pear \
+	php7-pecl-redis \
 	php7-pgsql \
 	php7-phar \
 	php7-posix \
@@ -188,20 +192,21 @@ RUN \
 	php7-tokenizer \
 	php7-xml \
 	php7-xmlreader \
+	php7-xmlrpc \
 	php7-zip \
-	py2-cryptography \
-	py2-future \
-	py2-pip \
-	ffmpeg && \
+	ffmpeg \
+	py3-cryptography \
+	py3-future \
+	py3-pip && \
  echo "**** install certbot plugins ****" && \
  if [ -z ${CERTBOT_VERSION+x} ]; then \
         CERTBOT="certbot"; \
  else \
         CERTBOT="certbot==${CERTBOT_VERSION}"; \
  fi && \
- pip install -U \
+ pip3 install -U \
 	pip && \
- pip install -U \
+ pip3 install -U \
 	${CERTBOT} \
 	certbot-dns-cloudflare \
 	certbot-dns-cloudxns \
@@ -209,6 +214,7 @@ RUN \
 	certbot-dns-dnsimple \
 	certbot-dns-dnsmadeeasy \
 	certbot-dns-google \
+	certbot-dns-inwx \
 	certbot-dns-luadns \
 	certbot-dns-nsone \
 	certbot-dns-ovh \
@@ -229,10 +235,17 @@ RUN \
 	"https://github.com/linuxserver/reverse-proxy-confs/tarball/master" && \
  tar xf \
 	/tmp/proxy.tar.gz -C \
-	/defaults/proxy-confs --strip-components=1 --exclude=linux*/.gitattributes --exclude=linux*/.github && \
+	/defaults/proxy-confs --strip-components=1 --exclude=linux*/.gitattributes --exclude=linux*/.github --exclude=linux*/.gitignore --exclude=linux*/LICENSE && \
+ echo "**** configure nginx ****" && \
+ rm -f /etc/nginx/conf.d/default.conf && \
  echo "**** cleanup ****" && \
+ for cleanfiles in *.pyc *.pyo; \
+	do \
+	find /usr/lib/python3.*  -iname "${cleanfiles}" -exec rm -f '{}' + \
+	; done && \
  rm -rf \
-	/tmp/*
+	/tmp/* \
+	/root/.cache
 
 # add local files
 COPY root/ /
