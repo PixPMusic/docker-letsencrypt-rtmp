@@ -195,7 +195,7 @@ RUN \
 	php7-xmlrpc \
 	php7-zip \
 	ffmpeg \
-	php7.0-cli php7.0-cgi php7.0-fpm \
+	php7-cli php7-cgi php7-fpm \
 	py3-cryptography \
 	py3-future \
 	py3-pip && \
