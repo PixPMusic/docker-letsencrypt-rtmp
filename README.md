@@ -1,3 +1,5 @@
+moved future development to [my new repo](https://github.com/PixPMusic/nginx-rtmp-stunnel) for better compatability with RTMPS
+
 I originally built this so I could have the RTMP module in my LetsEncrypt docker so I didn't have to nginx while I nginx'd, but turns out, mod-rtmp was being included in the upstream container.
 This now just has ffmpeg and some other updated packages. The upstream is probably fine. I haven't tested RTMP on the linuxserver/letsencrypt container.
 Don't expect this to be well maintained.
